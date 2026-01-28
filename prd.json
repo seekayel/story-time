@@ -117,8 +117,8 @@
     {
       "id": 17,
       "title": "Batch processing support",
-      "description": "Add ability to run multiple episodes through the pipeline at once, e.g. 'story-time develop-episode --all' or 'story-time write-script 1-5'.",
-      "status": "todo",
+      "description": "Run multiple episodes through the pipeline at once. All 5 episode-based commands (develop-episode, write-script, translate, synthesize, estimate-duration) accept episode ranges (1-5), comma-separated lists (1,3,5), mixed formats (1-3,7,9-11), or --all flag to process every episode in the season. Implemented via src/lib/episodes.ts (parseEpisodeRange, resolveEpisodes) for range parsing and src/lib/batch.ts (runBatch) for sequential execution with error isolation. Failed episodes are logged but don't abort the batch. CLI arguments changed from required <episode-number> to optional [episodes] with --all flag. Single-episode usage remains unchanged for backward compatibility. Unit tests in tests/episodes.test.ts and tests/batch.test.ts, integration tests in tests/commands/batch-develop-episode.test.ts.",
+      "status": "done",
       "priority": "low"
     },
     {
@@ -238,6 +238,55 @@
       "title": "Integration tests for estimate-duration command",
       "description": "Maintain passing tests in tests/commands/estimate-duration.test.ts. Tests cover: estimating from source script, estimating from translated script with --translated flag, target comparison output, missing script error, missing translated script error, invalid episode number, invalid YAML, invalid show path, default to source when translated is false.",
       "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 35,
+      "title": "Unit tests for episode range parsing",
+      "description": "Maintain passing tests in tests/episodes.test.ts. Tests cover: parseEpisodeRange (single number, range, comma-separated, mixed, deduplication, whitespace, sorting, invalid inputs, zero, negative, reversed range, empty string, invalid format) and resolveEpisodes (--all flag, smaller season, range parsing, single number, missing argument, --all precedence).",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 36,
+      "title": "Unit tests for batch runner",
+      "description": "Maintain passing tests in tests/batch.test.ts. Tests cover: runBatch calls function for each episode in order, continues after errors, does not throw when all fail, handles single episode, handles empty list.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 37,
+      "title": "Integration tests for batch develop-episode",
+      "description": "Maintain passing tests in tests/commands/batch-develop-episode.test.ts. Tests cover: processing episode range (1-3), comma-separated list (1,3,5) with verification of skipped episodes, --all resolution to full season, and error isolation (continues after individual episode failures).",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 38,
+      "title": "Config command test isolation",
+      "description": "Maintain passing tests in tests/commands/config.test.ts. Tests use beforeEach/afterEach to save and restore the user's ~/.story-time/config.yaml, resetting to a valid config before each test to prevent cross-test contamination from invalid model values.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 39,
+      "title": "Multi-show support",
+      "description": "Allow managing multiple shows from one installation. Currently limited to switching --show path manually. Could add a 'story-time list-shows' command and better show discovery.",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": 40,
+      "title": "Previous episode context for script writing",
+      "description": "When writing scripts for episodes beyond episode 1, provide the LLM with summaries or scripts from previous episodes to maintain narrative continuity and avoid contradictions.",
+      "status": "todo",
+      "priority": "normal"
+    },
+    {
+      "id": 41,
+      "title": "Episode metadata and RSS feed generation",
+      "description": "Generate proper podcast RSS XML with episode titles, descriptions, durations, and publication dates. Currently the publish command posts to an external endpoint but doesn't generate a local RSS feed file.",
+      "status": "todo",
       "priority": "normal"
     }
   ]

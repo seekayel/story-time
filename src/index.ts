@@ -12,6 +12,9 @@ import { status } from "./commands/status.ts";
 import { synthesize } from "./commands/synthesize.ts";
 import { translate } from "./commands/translate.ts";
 import { writeScript } from "./commands/write-script.ts";
+import { runBatch } from "./lib/batch.ts";
+import { loadShowConfig, resolveShowPath } from "./lib/config.ts";
+import { resolveEpisodes } from "./lib/episodes.ts";
 import { VALID_MODELS } from "./lib/llm.ts";
 
 const modelOption = () =>
@@ -62,76 +65,165 @@ program
 
 program
 	.command("develop-episode")
-	.description("Generate episode plot")
-	.argument("<episode-number>", "Episode number")
+	.description("Generate episode plot(s)")
+	.argument("[episodes]", "Episode number, range (1-5), or list (1,3,5)")
+	.option("--all", "Process all episodes in the season")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
 	.addOption(modelOption())
-	.action((episodeNumber, options) =>
-		developEpisode(episodeNumber, {
-			show: options.show,
-			season: Number.parseInt(options.season, 10),
-			model: options.model,
-		}),
-	);
+	.action((episodes, options) => {
+		const season = Number.parseInt(options.season, 10);
+		const showPath = resolveShowPath(options.show);
+		const config = loadShowConfig(showPath);
+		const resolved = resolveEpisodes(
+			episodes,
+			!!options.all,
+			config.episodes_per_season,
+		);
+		if (resolved.length === 1) {
+			return developEpisode(String(resolved[0]), {
+				show: options.show,
+				season,
+				model: options.model,
+			});
+		}
+		return runBatch(resolved, "develop-episode", (ep) =>
+			developEpisode(ep, {
+				show: options.show,
+				season,
+				model: options.model,
+			}),
+		);
+	});
 
 program
 	.command("write-script")
-	.description("Generate episode script")
-	.argument("<episode-number>", "Episode number")
+	.description("Generate episode script(s)")
+	.argument("[episodes]", "Episode number, range (1-5), or list (1,3,5)")
+	.option("--all", "Process all episodes in the season")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
 	.addOption(modelOption())
-	.action((episodeNumber, options) =>
-		writeScript(episodeNumber, {
-			show: options.show,
-			season: Number.parseInt(options.season, 10),
-			model: options.model,
-		}),
-	);
+	.action((episodes, options) => {
+		const season = Number.parseInt(options.season, 10);
+		const showPath = resolveShowPath(options.show);
+		const config = loadShowConfig(showPath);
+		const resolved = resolveEpisodes(
+			episodes,
+			!!options.all,
+			config.episodes_per_season,
+		);
+		if (resolved.length === 1) {
+			return writeScript(String(resolved[0]), {
+				show: options.show,
+				season,
+				model: options.model,
+			});
+		}
+		return runBatch(resolved, "write-script", (ep) =>
+			writeScript(ep, {
+				show: options.show,
+				season,
+				model: options.model,
+			}),
+		);
+	});
 
 program
 	.command("translate")
-	.description("Translate episode script to target language")
-	.argument("<episode-number>", "Episode number")
+	.description("Translate episode script(s) to target language")
+	.argument("[episodes]", "Episode number, range (1-5), or list (1,3,5)")
+	.option("--all", "Process all episodes in the season")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
 	.addOption(modelOption())
-	.action((episodeNumber, options) =>
-		translate(episodeNumber, {
-			show: options.show,
-			season: Number.parseInt(options.season, 10),
-			model: options.model,
-		}),
-	);
+	.action((episodes, options) => {
+		const season = Number.parseInt(options.season, 10);
+		const showPath = resolveShowPath(options.show);
+		const config = loadShowConfig(showPath);
+		const resolved = resolveEpisodes(
+			episodes,
+			!!options.all,
+			config.episodes_per_season,
+		);
+		if (resolved.length === 1) {
+			return translate(String(resolved[0]), {
+				show: options.show,
+				season,
+				model: options.model,
+			});
+		}
+		return runBatch(resolved, "translate", (ep) =>
+			translate(ep, {
+				show: options.show,
+				season,
+				model: options.model,
+			}),
+		);
+	});
 
 program
 	.command("synthesize")
-	.description("Synthesize audio from translated script")
-	.argument("<episode-number>", "Episode number")
+	.description("Synthesize audio from translated script(s)")
+	.argument("[episodes]", "Episode number, range (1-5), or list (1,3,5)")
+	.option("--all", "Process all episodes in the season")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
-	.action((episodeNumber, options) =>
-		synthesize(episodeNumber, {
-			show: options.show,
-			season: Number.parseInt(options.season, 10),
-		}),
-	);
+	.action((episodes, options) => {
+		const season = Number.parseInt(options.season, 10);
+		const showPath = resolveShowPath(options.show);
+		const config = loadShowConfig(showPath);
+		const resolved = resolveEpisodes(
+			episodes,
+			!!options.all,
+			config.episodes_per_season,
+		);
+		if (resolved.length === 1) {
+			return synthesize(String(resolved[0]), {
+				show: options.show,
+				season,
+			});
+		}
+		return runBatch(resolved, "synthesize", (ep) =>
+			synthesize(ep, {
+				show: options.show,
+				season,
+			}),
+		);
+	});
 
 program
 	.command("estimate-duration")
-	.description("Estimate audio duration from a script")
-	.argument("<episode-number>", "Episode number")
+	.description("Estimate audio duration from script(s)")
+	.argument("[episodes]", "Episode number, range (1-5), or list (1,3,5)")
+	.option("--all", "Process all episodes in the season")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
 	.option("--translated", "Estimate from translated script instead of source")
-	.action((episodeNumber, options) =>
-		estimateDurationCommand(episodeNumber, {
-			show: options.show,
-			season: Number.parseInt(options.season, 10),
-			translated: options.translated ?? false,
-		}),
-	);
+	.action((episodes, options) => {
+		const season = Number.parseInt(options.season, 10);
+		const showPath = resolveShowPath(options.show);
+		const config = loadShowConfig(showPath);
+		const resolved = resolveEpisodes(
+			episodes,
+			!!options.all,
+			config.episodes_per_season,
+		);
+		if (resolved.length === 1) {
+			return estimateDurationCommand(String(resolved[0]), {
+				show: options.show,
+				season,
+				translated: options.translated ?? false,
+			});
+		}
+		return runBatch(resolved, "estimate-duration", (ep) =>
+			estimateDurationCommand(ep, {
+				show: options.show,
+				season,
+				translated: options.translated ?? false,
+			}),
+		);
+	});
 
 program
 	.command("status")
