@@ -7,6 +7,7 @@ import { developSeason } from "./commands/develop-season.ts";
 import { developShow } from "./commands/develop-show.ts";
 import { initShow } from "./commands/init.ts";
 import { publish } from "./commands/publish.ts";
+import { status } from "./commands/status.ts";
 import { synthesize } from "./commands/synthesize.ts";
 import { translate } from "./commands/translate.ts";
 import { writeScript } from "./commands/write-script.ts";
@@ -98,6 +99,18 @@ program
 		synthesize(episodeNumber, {
 			show: options.show,
 			season: Number.parseInt(options.season, 10),
+		}),
+	);
+
+program
+	.command("status")
+	.description("Show pipeline progress for a show")
+	.option("--show <path>", "Show directory path")
+	.option("--season <number>", "Season number")
+	.action((options) =>
+		status({
+			show: options.show,
+			season: options.season ? Number.parseInt(options.season, 10) : undefined,
 		}),
 	);
 

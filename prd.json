@@ -176,6 +176,34 @@
       "description": "Maintain passing tests in tests/commands/synthesize-retry.test.ts and tests/commands/publish-retry.test.ts. Tests verify: retry on transient 500 errors with eventual success, no retry on 401/400 client errors, retry on 429 rate limits, retry on 503 with eventual graceful failure. Tests use mocked retry module with zero-delay sleep for fast execution.",
       "status": "done",
       "priority": "normal"
+    },
+    {
+      "id": 26,
+      "title": "Pipeline status command",
+      "description": "Implement 'story-time status' command that shows pipeline progress for a show. Displays which characters have been generated, whether season arcs exist, and per-episode status of each pipeline stage (plot, script, translated, audio). Supports --show and --season flags. Includes summary counts and a suggested next command. Testable via exported getShowStatus function. Implemented in src/commands/status.ts with integration tests in tests/commands/status.test.ts.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 27,
+      "title": "Integration tests for status command",
+      "description": "Maintain passing tests in tests/commands/status.test.ts. Tests cover: show name and path, empty/populated characters, season arc status, per-episode pipeline stage tracking, default season when none exist, multi-season scanning, season filtering, and error on missing show path.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 28,
+      "title": "Per-command --model flag override",
+      "description": "Add --model flag to individual pipeline commands (develop-show, develop-season, develop-episode, write-script, translate) to override the default model for a single run without changing the global config.",
+      "status": "todo",
+      "priority": "normal"
+    },
+    {
+      "id": 29,
+      "title": "Sound effects library integration",
+      "description": "Integrate ambient sounds and sound effects into synthesized audio. Currently non-verbal actions are skipped during synthesis. Add support for mapping action descriptions to sound effect files.",
+      "status": "todo",
+      "priority": "low"
     }
   ]
 }
