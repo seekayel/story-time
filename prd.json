@@ -285,8 +285,8 @@
     {
       "id": 41,
       "title": "Episode metadata and RSS feed generation",
-      "description": "Generate proper podcast RSS XML with episode titles, descriptions, durations, and publication dates. Currently the publish command posts to an external endpoint but doesn't generate a local RSS feed file.",
-      "status": "todo",
+      "description": "Generate proper podcast RSS XML with episode titles, descriptions, durations, and publication dates. Implemented 'story-time generate-feed' command that scans show directories for audio files and generates feed.xml. RSS library in src/lib/rss.ts with collectEpisodeMetadata(), generateRssFeed(), escapeXml(), and formatDurationHMS() helpers. Supports feed.yaml configuration for baseUrl, author, categories, imageUrl, and email. Episodes sorted newest-first. Extracts titles from translated scripts, descriptions from plots. Supports --season filtering and --output path override. Unit tests in tests/rss.test.ts, integration tests in tests/commands/generate-feed.test.ts.",
+      "status": "done",
       "priority": "normal"
     },
     {
@@ -300,6 +300,20 @@
       "id": 43,
       "title": "Integration tests for previous episode context in commands",
       "description": "Maintain passing tests in tests/commands/previous-context.test.ts. Tests verify: episode 1 does not include previous context for both develop-episode and write-script, episode 2 includes previous episode 1 plot for develop-episode, episode 3 includes episodes 1 and 2 context, write-script includes both plots and scripts from previous episodes, narrative continuity instruction is present in prompts.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 44,
+      "title": "Unit tests for RSS feed generation",
+      "description": "Maintain passing tests in tests/rss.test.ts. Tests cover: escapeXml (ampersand, angle brackets, quotes, empty string, plain text), formatDurationHMS (zero, seconds, minutes, hours, padding), generateRssFeed (channel metadata, episode items, sorting newest-first, multi-season sorting, XML escaping, relative paths without baseUrl, optional fields omission, explicit flag, multiple categories, trailing slash handling, empty episodes list).",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 45,
+      "title": "Integration tests for generate-feed command",
+      "description": "Maintain passing tests in tests/commands/generate-feed.test.ts. Tests cover: generating feed.xml with audio episodes, extracting episode title from translated script, using plot description for episodes, --season filtering, including all seasons when unspecified, custom --output path, graceful handling of no audio files, working without feed.yaml (defaults), invalid show path error, XML escaping of special characters in output.",
       "status": "done",
       "priority": "normal"
     }

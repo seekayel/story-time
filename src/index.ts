@@ -6,6 +6,7 @@ import { developEpisode } from "./commands/develop-episode.ts";
 import { developSeason } from "./commands/develop-season.ts";
 import { developShow } from "./commands/develop-show.ts";
 import { estimateDurationCommand } from "./commands/estimate-duration.ts";
+import { generateFeed } from "./commands/generate-feed.ts";
 import { initShow } from "./commands/init.ts";
 import { publish } from "./commands/publish.ts";
 import { status } from "./commands/status.ts";
@@ -224,6 +225,20 @@ program
 			}),
 		);
 	});
+
+program
+	.command("generate-feed")
+	.description("Generate podcast RSS feed XML from episode audio files")
+	.option("--show <path>", "Show directory path")
+	.option("--season <number>", "Season number (omit for all seasons)")
+	.option("--output <path>", "Output file path (default: <show>/feed.xml)")
+	.action((options) =>
+		generateFeed({
+			show: options.show,
+			season: options.season ? Number.parseInt(options.season, 10) : undefined,
+			output: options.output,
+		}),
+	);
 
 program
 	.command("status")
