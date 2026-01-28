@@ -12,6 +12,7 @@ import {
 	writeFileEnsureDir,
 } from "../lib/files.ts";
 import { generate } from "../lib/llm.ts";
+import { validateScriptYaml } from "../lib/scripts.ts";
 
 export async function writeScript(
 	episodeNumber: string,
@@ -103,9 +104,41 @@ Episode plot:\n${plotContent}`;
 		prompt += `\n\nIncorporate this feedback:\n${feedback.map((f) => `- ${f}`).join("\n")}`;
 	}
 
-	console.log("  Generating script...");
-	const result = await generate({ system: systemPrompt, prompt });
-	writeFileEnsureDir(scriptPath, result);
-	console.log(`  Wrote ${scriptPath}`);
-	console.log("Script writing complete.");
+	const maxAttempts = 3;
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		console.log(
+			attempt === 1
+				? "  Generating script..."
+				: `  Re-generating script (attempt ${attempt}/${maxAttempts})...`,
+		);
+
+		const currentPrompt =
+			attempt === 1
+				? prompt
+				: `${prompt}\n\nIMPORTANT: Your previous output was not valid YAML matching the required schema. Please ensure the output is a valid YAML code block with title, episode, season, and scenes fields.`;
+
+		const result = await generate({
+			system: systemPrompt,
+			prompt: currentPrompt,
+		});
+		const validation = validateScriptYaml(result);
+
+		if (validation.ok) {
+			writeFileEnsureDir(scriptPath, result);
+			console.log(`  Wrote ${scriptPath}`);
+			console.log("Script writing complete.");
+			return;
+		}
+
+		console.warn(`  Script validation failed: ${validation.error}`);
+
+		if (attempt === maxAttempts) {
+			writeFileEnsureDir(scriptPath, result);
+			console.warn(
+				`  Warning: Script saved but failed validation after ${maxAttempts} attempts. You may need to manually fix the YAML format.`,
+			);
+			console.log(`  Wrote ${scriptPath}`);
+			return;
+		}
+	}
 }

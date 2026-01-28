@@ -145,8 +145,22 @@
     {
       "id": 21,
       "title": "Validate LLM output format for scripts",
-      "description": "After LLM generates a script (write-script and translate commands), validate the output parses as valid YAML matching the scriptSchema. Re-prompt the LLM if validation fails, to avoid downstream synthesis errors.",
-      "status": "todo",
+      "description": "After LLM generates a script (write-script and translate commands), validate the output parses as valid YAML matching the scriptSchema. Re-prompt the LLM if validation fails (up to 3 attempts), to avoid downstream synthesis errors. Implemented in src/lib/scripts.ts with extractYaml and validateScriptYaml helpers, integrated into both write-script and translate commands. Unit tests in tests/scripts.test.ts and validation retry integration tests in tests/commands/write-script-validation.test.ts and tests/commands/translate-validation.test.ts.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 22,
+      "title": "Unit tests for script validation helpers",
+      "description": "Maintain passing tests for extractYaml and validateScriptYaml in tests/scripts.test.ts. Tests cover: YAML extraction from markdown code blocks, valid script parsing, missing required fields, invalid YAML syntax, and edge cases.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 23,
+      "title": "Integration tests for script validation retry",
+      "description": "Maintain passing tests for write-script and translate validation retry behavior. Tests in tests/commands/write-script-validation.test.ts and tests/commands/translate-validation.test.ts verify that commands retry LLM generation when output fails YAML validation.",
+      "status": "done",
       "priority": "normal"
     }
   ]

@@ -10,6 +10,7 @@ import {
 	writeFileEnsureDir,
 } from "../lib/files.ts";
 import { generate } from "../lib/llm.ts";
+import { validateScriptYaml } from "../lib/scripts.ts";
 
 export async function translate(
 	episodeNumber: string,
@@ -62,9 +63,41 @@ Preserve all YAML formatting exactly.`;
 		prompt += `\n\nIncorporate this feedback:\n${feedback.map((f) => `- ${f}`).join("\n")}`;
 	}
 
-	console.log("  Translating script...");
-	const result = await generate({ system: systemPrompt, prompt });
-	writeFileEnsureDir(translatedPath, result);
-	console.log(`  Wrote ${translatedPath}`);
-	console.log("Translation complete.");
+	const maxAttempts = 3;
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		console.log(
+			attempt === 1
+				? "  Translating script..."
+				: `  Re-translating script (attempt ${attempt}/${maxAttempts})...`,
+		);
+
+		const currentPrompt =
+			attempt === 1
+				? prompt
+				: `${prompt}\n\nIMPORTANT: Your previous output was not valid YAML matching the required schema. Please ensure the output is a valid YAML code block with title, episode, season, and scenes fields. Preserve the exact YAML structure.`;
+
+		const result = await generate({
+			system: systemPrompt,
+			prompt: currentPrompt,
+		});
+		const validation = validateScriptYaml(result);
+
+		if (validation.ok) {
+			writeFileEnsureDir(translatedPath, result);
+			console.log(`  Wrote ${translatedPath}`);
+			console.log("Translation complete.");
+			return;
+		}
+
+		console.warn(`  Translation validation failed: ${validation.error}`);
+
+		if (attempt === maxAttempts) {
+			writeFileEnsureDir(translatedPath, result);
+			console.warn(
+				`  Warning: Translation saved but failed validation after ${maxAttempts} attempts. You may need to manually fix the YAML format.`,
+			);
+			console.log(`  Wrote ${translatedPath}`);
+			return;
+		}
+	}
 }
