@@ -5,6 +5,7 @@ import {
 	loadShowConfig,
 	resolveShowPath,
 } from "../lib/config.ts";
+import { isRetryableStatusCode, withRetry } from "../lib/retry.ts";
 
 export async function publish(options: {
 	show?: string;
@@ -51,29 +52,62 @@ export async function publish(options: {
 
 		console.log(`  Publishing ${epDir}...`);
 
-		// Read audio file
-		const audioFile = Bun.file(audioPath);
-		const formData = new FormData();
-		formData.append("audio", audioFile);
-		formData.append("show_name", config.name);
-		formData.append("season", String(season));
-		formData.append("episode", epDir.replace("ep-", ""));
+		try {
+			await withRetry(
+				async () => {
+					// Read audio file (re-read on each attempt for fresh FormData)
+					const audioFile = Bun.file(audioPath);
+					const formData = new FormData();
+					formData.append("audio", audioFile);
+					formData.append("show_name", config.name);
+					formData.append("season", String(season));
+					formData.append("episode", epDir.replace("ep-", ""));
 
-		const response = await fetch(endpoint, {
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${apiKey}`,
-			},
-			body: formData,
-		});
+					const response = await fetch(endpoint, {
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${apiKey}`,
+						},
+						body: formData,
+					});
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error(
-				`  Failed to publish ${epDir}: ${response.status} ${errorText}`,
+					if (!response.ok) {
+						const errorText = await response.text();
+						const err = new Error(
+							`Failed to publish ${epDir}: ${response.status} ${errorText}`,
+						);
+						(err as Error & { statusCode: number }).statusCode =
+							response.status;
+						throw err;
+					}
+
+					console.log(`  Published ${epDir}`);
+				},
+				{
+					maxRetries: 3,
+					initialDelayMs: 1000,
+					isRetryable: (error) => {
+						if (
+							error &&
+							typeof error === "object" &&
+							"statusCode" in error &&
+							typeof (error as { statusCode: unknown }).statusCode === "number"
+						) {
+							return isRetryableStatusCode(
+								(error as { statusCode: number }).statusCode,
+							);
+						}
+						return true; // Retry network errors
+					},
+					onRetry: (attempt, delayMs) => {
+						console.warn(
+							`  Publish failed for ${epDir}, retrying (attempt ${attempt + 1}/4) after ${delayMs}ms...`,
+						);
+					},
+				},
 			);
-		} else {
-			console.log(`  Published ${epDir}`);
+		} catch (err) {
+			console.error(`  ${err instanceof Error ? err.message : String(err)}`);
 		}
 	}
 

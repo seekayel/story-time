@@ -91,13 +91,14 @@ describe("publish command", () => {
 		writeEpisodeAudio(showPath, 1, 1);
 
 		const mockFetch = spyOn(globalThis, "fetch").mockImplementation(
-			async () => new Response("Server Error", { status: 500 }),
+			async () => new Response("Bad Request", { status: 400 }),
 		);
 
 		try {
 			const { publish } = await import("../../src/commands/publish.ts");
 			// Publish logs errors but does not throw for API failures
 			await publish({ show: showPath, season: 1 });
+			// 400 is not retryable, so only called once
 			expect(mockFetch).toHaveBeenCalledTimes(1);
 		} finally {
 			mockFetch.mockRestore();

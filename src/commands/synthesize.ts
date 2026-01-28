@@ -6,6 +6,7 @@ import {
 	resolveShowPath,
 } from "../lib/config.ts";
 import { readFileIfExists, writeFileEnsureDir } from "../lib/files.ts";
+import { isRetryableStatusCode, withRetry } from "../lib/retry.ts";
 import { type Script, scriptSchema } from "../lib/schemas.ts";
 
 export async function synthesize(
@@ -100,29 +101,57 @@ export async function synthesize(
 			`  [${i + 1}/${dialogueBeats.length}] ${beat.character}: "${beat.text.slice(0, 50)}..."`,
 		);
 
-		const response = await fetch(
-			`https://api.elevenlabs.io/v1/text-to-speech/${beat.voiceId}`,
+		const buffer = await withRetry(
+			async () => {
+				const response = await fetch(
+					`https://api.elevenlabs.io/v1/text-to-speech/${beat.voiceId}`,
+					{
+						method: "POST",
+						headers: {
+							"xi-api-key": apiKey,
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							text: beat.text,
+							model_id: "eleven_multilingual_v2",
+						}),
+					},
+				);
+
+				if (!response.ok) {
+					const errorText = await response.text();
+					const err = new Error(
+						`ElevenLabs API error (${response.status}): ${errorText}`,
+					);
+					(err as Error & { statusCode: number }).statusCode = response.status;
+					throw err;
+				}
+
+				return new Uint8Array(await response.arrayBuffer());
+			},
 			{
-				method: "POST",
-				headers: {
-					"xi-api-key": apiKey,
-					"Content-Type": "application/json",
+				maxRetries: 3,
+				initialDelayMs: 1000,
+				isRetryable: (error) => {
+					if (
+						error &&
+						typeof error === "object" &&
+						"statusCode" in error &&
+						typeof (error as { statusCode: unknown }).statusCode === "number"
+					) {
+						return isRetryableStatusCode(
+							(error as { statusCode: number }).statusCode,
+						);
+					}
+					return true; // Retry network errors
 				},
-				body: JSON.stringify({
-					text: beat.text,
-					model_id: "eleven_multilingual_v2",
-				}),
+				onRetry: (attempt, delayMs) => {
+					console.warn(
+						`  ElevenLabs request failed for beat ${i + 1}, retrying (attempt ${attempt + 1}/4) after ${delayMs}ms...`,
+					);
+				},
 			},
 		);
-
-		if (!response.ok) {
-			const errorText = await response.text();
-			throw new Error(
-				`ElevenLabs API error (${response.status}): ${errorText}`,
-			);
-		}
-
-		const buffer = new Uint8Array(await response.arrayBuffer());
 		audioChunks.push(buffer);
 	}
 

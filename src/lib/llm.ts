@@ -2,6 +2,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { loadAppConfig } from "./config.ts";
+import { withRetry } from "./retry.ts";
 
 export type ModelProvider = "gemini" | "claude";
 
@@ -33,10 +34,23 @@ export interface GenerateOptions {
 
 export async function generate(options: GenerateOptions): Promise<string> {
 	const model = getModel(options.provider);
-	const result = await generateText({
-		model,
-		system: options.system,
-		prompt: options.prompt,
-	});
-	return result.text;
+	return withRetry(
+		async () => {
+			const result = await generateText({
+				model,
+				system: options.system,
+				prompt: options.prompt,
+			});
+			return result.text;
+		},
+		{
+			maxRetries: 3,
+			initialDelayMs: 1000,
+			onRetry: (attempt, delayMs) => {
+				console.warn(
+					`  LLM request failed, retrying (attempt ${attempt + 1}/4) after ${delayMs}ms...`,
+				);
+			},
+		},
+	);
 }

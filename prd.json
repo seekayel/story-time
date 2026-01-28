@@ -138,8 +138,8 @@
     {
       "id": 20,
       "title": "Retry logic for API calls",
-      "description": "Add retry logic with exponential backoff for transient failures in LLM API calls (Gemini/Claude), ElevenLabs synthesis API, and podcast RSS publishing endpoint. Prevent losing progress on long synthesis runs due to temporary network issues.",
-      "status": "todo",
+      "description": "Add retry logic with exponential backoff for transient failures in LLM API calls (Gemini/Claude), ElevenLabs synthesis API, and podcast RSS publishing endpoint. Implemented in src/lib/retry.ts with withRetry utility and isRetryableStatusCode helper. Integrated into src/lib/llm.ts (generate function), src/commands/synthesize.ts (ElevenLabs fetch), and src/commands/publish.ts (RSS publishing fetch). Retries up to 3 times with exponential backoff (1s, 2s, 4s). Only retries transient errors (408, 429, 500+), not client errors (400, 401, 403, 404).",
+      "status": "done",
       "priority": "normal"
     },
     {
@@ -160,6 +160,20 @@
       "id": 23,
       "title": "Integration tests for script validation retry",
       "description": "Maintain passing tests for write-script and translate validation retry behavior. Tests in tests/commands/write-script-validation.test.ts and tests/commands/translate-validation.test.ts verify that commands retry LLM generation when output fails YAML validation.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 24,
+      "title": "Unit tests for retry utility",
+      "description": "Maintain passing tests in tests/retry.test.ts for the withRetry function and isRetryableStatusCode helper. Tests cover: success on first attempt, retry and recover, exhaust retries, onRetry callback, isRetryable predicate, maxDelayMs cap, zero retries. Status code tests cover retryable (408, 429, 500-504) and non-retryable (200, 400, 401, 403, 404) codes.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 25,
+      "title": "Integration tests for API retry in synthesize and publish",
+      "description": "Maintain passing tests in tests/commands/synthesize-retry.test.ts and tests/commands/publish-retry.test.ts. Tests verify: retry on transient 500 errors with eventual success, no retry on 401/400 client errors, retry on 429 rate limits, retry on 503 with eventual graceful failure. Tests use mocked retry module with zero-delay sleep for fast execution.",
       "status": "done",
       "priority": "normal"
     }
