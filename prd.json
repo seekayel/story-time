@@ -1,0 +1,139 @@
+{
+  "project": "story-time",
+  "description": "CLI application that runs a full content generation pipeline for children's audio series. Generates character briefs, season arcs, episode plots, scripts, and synthesizes them into audio files for podcast distribution. https://github.com/seekayel/story-time",
+  "issues": [
+    {
+      "id": 1,
+      "title": "Project setup with Bun, TypeScript, Biome",
+      "description": "Initialize the project with Bun runtime, TypeScript, Biome for linting, bun test for testing. Set up package.json with scripts for lint, build, and test. Create tsconfig.json, biome.json, .gitignore, and .env.example.",
+      "status": "done",
+      "priority": "critical"
+    },
+    {
+      "id": 2,
+      "title": "CLI framework and command routing",
+      "description": "Set up the CLI entry point using Commander.js. Register all pipeline commands: init, develop-show, develop-season, develop-episode, write-script, translate, synthesize, publish, config. Each command accepts the flags described in the spec (--season, --episode, --model, --show).",
+      "status": "done",
+      "priority": "critical"
+    },
+    {
+      "id": 3,
+      "title": "Show init command",
+      "description": "Implement 'story-time init <show-name>' command that creates the show directory structure and a default show.yaml configuration file with the schema defined in the spec.",
+      "status": "done",
+      "priority": "critical"
+    },
+    {
+      "id": 4,
+      "title": "Show configuration loading and validation",
+      "description": "Implement show.yaml parsing and validation with Zod schemas. Load show config from the active show directory. Validate required fields (name, description, setting, characters with voice_ids, content_guidelines). Support the config command for setting active show path and default model.",
+      "status": "done",
+      "priority": "critical"
+    },
+    {
+      "id": 5,
+      "title": "LLM integration with Vercel AI SDK",
+      "description": "Set up Vercel AI SDK with support for Gemini 2.5 Pro (default) and Claude Sonnet 4.5. Load API keys from environment variables. Create a shared LLM helper that accepts prompts and returns structured output. Support model switching via config command.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 6,
+      "title": "Stage 1: develop-show command",
+      "description": "Implement the develop-show command that reads show.yaml and generates character brief markdown files in characters/*.md. Should incorporate existing character files and FEEDBACK comments on re-runs.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 7,
+      "title": "Stage 2: develop-season command",
+      "description": "Implement the develop-season command that reads characters and show config to generate seasons/season-XX/arc.md. Should incorporate existing arc file and FEEDBACK comments on re-runs.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 8,
+      "title": "Stage 3: develop-episode command",
+      "description": "Implement the develop-episode command that reads arc and characters to generate episodes/ep-XX/plot.md. Should incorporate existing plot file and FEEDBACK comments on re-runs.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 9,
+      "title": "Stage 4: write-script command",
+      "description": "Implement the write-script command that reads plot and characters to generate episodes/ep-XX/script.md in the structured YAML format defined in the spec. Should incorporate existing script and FEEDBACK comments on re-runs.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 10,
+      "title": "Stage 5: translate command",
+      "description": "Implement the translate command that reads script.md and produces script-es.md (or script-{target_language}.md). Uses LLM for translation from source to target language.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 11,
+      "title": "Stage 6: synthesize command with ElevenLabs",
+      "description": "Implement the synthesize command that reads the translated script and uses ElevenLabs API to generate audio.mp3 for each episode. Map character dialogue to voice IDs from show.yaml. Skip non-verbal actions.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 12,
+      "title": "Stage 7: publish command for RSS",
+      "description": "Implement the publish command that posts audio files and metadata to the podcast RSS endpoint for Apple Podcasts distribution.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 13,
+      "title": "Environment variable and .env loading",
+      "description": "Set up .env file loading via dotenv for API keys (GEMINI_API_KEY, ANTHROPIC_API_KEY, ELEVEN_LABS_API_KEY, PODCAST_RSS_ENDPOINT, PODCAST_API_KEY). Created .env.example template.",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 14,
+      "title": "Unit tests for schemas, config, files, and init",
+      "description": "Maintain passing tests for Zod schemas (showConfigSchema, scriptSchema), config path helpers (getSeasonDir, getEpisodeDir), file utilities (extractFeedback), and the init command (creates directory structure, valid show.yaml, duplicate detection).",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": 15,
+      "title": "Integration tests for CLI commands",
+      "description": "Add integration tests that verify CLI commands work end-to-end: init creates proper structure, config saves/loads settings, develop-show generates files (with mocked LLM). Ensure error handling for missing config, missing prerequisites, and invalid inputs.",
+      "status": "todo",
+      "priority": "high"
+    },
+    {
+      "id": 16,
+      "title": "Error handling and user-friendly messages",
+      "description": "Add proper error handling for all commands with clear user-facing error messages. Handle missing API keys gracefully, validate episode/season numbers, and provide helpful next-step suggestions when prerequisites are missing.",
+      "status": "todo",
+      "priority": "normal"
+    },
+    {
+      "id": 17,
+      "title": "Batch processing support",
+      "description": "Add ability to run multiple episodes through the pipeline at once, e.g. 'story-time develop-episode --all' or 'story-time write-script 1-5'.",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": 18,
+      "title": "Duration estimation before synthesis",
+      "description": "Estimate episode audio length from script word count before running expensive ElevenLabs synthesis.",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": 19,
+      "title": "Narrator voice support",
+      "description": "Add optional narrator voice that reads scene descriptions and stage directions during audio synthesis.",
+      "status": "todo",
+      "priority": "low"
+    }
+  ]
+}
