@@ -5,6 +5,7 @@ import { configCommand } from "./commands/config.ts";
 import { developEpisode } from "./commands/develop-episode.ts";
 import { developSeason } from "./commands/develop-season.ts";
 import { developShow } from "./commands/develop-show.ts";
+import { estimateDurationCommand } from "./commands/estimate-duration.ts";
 import { initShow } from "./commands/init.ts";
 import { publish } from "./commands/publish.ts";
 import { status } from "./commands/status.ts";
@@ -114,6 +115,21 @@ program
 		synthesize(episodeNumber, {
 			show: options.show,
 			season: Number.parseInt(options.season, 10),
+		}),
+	);
+
+program
+	.command("estimate-duration")
+	.description("Estimate audio duration from a script")
+	.argument("<episode-number>", "Episode number")
+	.option("--show <path>", "Show directory path")
+	.option("--season <number>", "Season number", "1")
+	.option("--translated", "Estimate from translated script instead of source")
+	.action((episodeNumber, options) =>
+		estimateDurationCommand(episodeNumber, {
+			show: options.show,
+			season: Number.parseInt(options.season, 10),
+			translated: options.translated ?? false,
 		}),
 	);
 

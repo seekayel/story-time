@@ -124,8 +124,8 @@
     {
       "id": 18,
       "title": "Duration estimation before synthesis",
-      "description": "Estimate episode audio length from script word count before running expensive ElevenLabs synthesis.",
-      "status": "todo",
+      "description": "Estimate episode audio duration from script dialogue word count before running expensive ElevenLabs synthesis. Implemented in src/lib/duration.ts with estimateDuration() and formatDurationEstimate() utilities. Estimates based on language-specific speech rates (130 wpm English, 140 wpm Spanish), inter-beat pauses, scene transitions, and action beat timing. New 'story-time estimate-duration <episode>' CLI command with --translated flag. Duration estimate also displayed automatically in synthesize command before API calls. Compares estimate to target duration from show.yaml. Unit tests in tests/duration.test.ts and integration tests in tests/commands/estimate-duration.test.ts.",
+      "status": "done",
       "priority": "low"
     },
     {
@@ -223,6 +223,20 @@
       "id": 32,
       "title": "Unit tests for model validation",
       "description": "Maintain passing tests in tests/model-validation.test.ts. Tests cover: VALID_MODELS contains exactly gemini and claude, validateModelProvider accepts valid values and returns them, rejects invalid model names with descriptive error message, rejects empty strings, rejects case-variant names (Gemini, Claude, gpt-4).",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 33,
+      "title": "Unit tests for duration estimation",
+      "description": "Maintain passing tests in tests/duration.test.ts. Tests cover: countWords (simple sentences, multiple spaces, empty/whitespace strings, single word, trimming), estimateDuration (empty scenes, dialogue beats, action-only beats, Spanish speech rate, unknown language fallback, scene pauses, mixed beats, minute rounding), formatDurationEstimate (without target, within/over/under target display).",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 34,
+      "title": "Integration tests for estimate-duration command",
+      "description": "Maintain passing tests in tests/commands/estimate-duration.test.ts. Tests cover: estimating from source script, estimating from translated script with --translated flag, target comparison output, missing script error, missing translated script error, invalid episode number, invalid YAML, invalid show path, default to source when translated is false.",
       "status": "done",
       "priority": "normal"
     }

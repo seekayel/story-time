@@ -5,6 +5,7 @@ import {
 	loadShowConfig,
 	resolveShowPath,
 } from "../lib/config.ts";
+import { estimateDuration, formatDurationEstimate } from "../lib/duration.ts";
 import { readFileIfExists, writeFileEnsureDir } from "../lib/files.ts";
 import { isRetryableStatusCode, withRetry } from "../lib/retry.ts";
 import { type Script, scriptSchema } from "../lib/schemas.ts";
@@ -52,6 +53,13 @@ export async function synthesize(
 			`Failed to parse script YAML: ${err instanceof Error ? err.message : String(err)}`,
 		);
 	}
+
+	// Show duration estimate before synthesis
+	const estimate = estimateDuration(script, config.target_language);
+	console.log(
+		`  ${formatDurationEstimate(estimate, config.episode_duration_minutes)}`,
+	);
+	console.log("");
 
 	// Build voice map from config
 	const voiceMap = new Map<string, string>();
