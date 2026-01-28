@@ -278,8 +278,8 @@
     {
       "id": 40,
       "title": "Previous episode context for script writing",
-      "description": "When writing scripts for episodes beyond episode 1, provide the LLM with summaries or scripts from previous episodes to maintain narrative continuity and avoid contradictions.",
-      "status": "todo",
+      "description": "When writing scripts or developing plots for episodes beyond episode 1, provide the LLM with summaries or scripts from previous episodes to maintain narrative continuity and avoid contradictions. Implemented in src/lib/context.ts with getPreviousEpisodeContext() and formatPreviousContext() helpers. Integrated into develop-episode (plots only) and write-script (plots + scripts) commands. develop-episode receives previous episode plots for narrative continuity; write-script receives both plots and scripts for detailed context. Unit tests in tests/context.test.ts, integration tests in tests/commands/previous-context.test.ts.",
+      "status": "done",
       "priority": "normal"
     },
     {
@@ -287,6 +287,20 @@
       "title": "Episode metadata and RSS feed generation",
       "description": "Generate proper podcast RSS XML with episode titles, descriptions, durations, and publication dates. Currently the publish command posts to an external endpoint but doesn't generate a local RSS feed file.",
       "status": "todo",
+      "priority": "normal"
+    },
+    {
+      "id": 42,
+      "title": "Unit tests for previous episode context",
+      "description": "Maintain passing tests in tests/context.test.ts. Tests cover: getPreviousEpisodeContext returns empty for episode 1, empty when no previous episodes exist, plot from previous episode, plot and script together, multiple previous episodes in order, skipping episodes with no files, correct season isolation. formatPreviousContext tests cover: empty summaries, plot-only context, context with scripts, exclusion of scripts when disabled, multiple episodes with separators, summary with only script.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 43,
+      "title": "Integration tests for previous episode context in commands",
+      "description": "Maintain passing tests in tests/commands/previous-context.test.ts. Tests verify: episode 1 does not include previous context for both develop-episode and write-script, episode 2 includes previous episode 1 plot for develop-episode, episode 3 includes episodes 1 and 2 context, write-script includes both plots and scripts from previous episodes, narrative continuity instruction is present in prompts.",
+      "status": "done",
       "priority": "normal"
     }
   ]

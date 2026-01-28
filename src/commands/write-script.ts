@@ -7,6 +7,10 @@ import {
 	resolveShowPath,
 } from "../lib/config.ts";
 import {
+	formatPreviousContext,
+	getPreviousEpisodeContext,
+} from "../lib/context.ts";
+import {
 	extractFeedback,
 	readFileIfExists,
 	writeFileEnsureDir,
@@ -94,6 +98,13 @@ Episode plot:\n${plotContent}`;
 
 	if (characterBriefs) {
 		prompt += `\n\nCharacter briefs:\n${characterBriefs}`;
+	}
+
+	// Load previous episode context for narrative continuity
+	const previousSummaries = getPreviousEpisodeContext(showPath, season, epNum);
+	if (previousSummaries.length > 0) {
+		const previousContext = formatPreviousContext(previousSummaries, true);
+		prompt += `\n\n${previousContext}\n\nUse the above previous episodes for context to maintain narrative continuity. Reference established events and character developments where appropriate, but keep this episode standalone.`;
 	}
 
 	if (existing) {
