@@ -103,15 +103,15 @@
     {
       "id": 15,
       "title": "Integration tests for CLI commands",
-      "description": "Add integration tests that verify CLI commands work end-to-end: init creates proper structure, config saves/loads settings, develop-show generates files (with mocked LLM). Ensure error handling for missing config, missing prerequisites, and invalid inputs.",
-      "status": "todo",
+      "description": "Integration tests for all 7 pipeline commands plus config, with mocked LLM and fetch. Tests cover: happy paths (file generation, audio synthesis, publishing), error paths (missing prerequisites, invalid inputs, missing API keys, API errors), edge cases (feedback incorporation, season/episode numbering). 43 new integration test cases across 8 test files with test fixture helpers.",
+      "status": "done",
       "priority": "high"
     },
     {
       "id": 16,
       "title": "Error handling and user-friendly messages",
-      "description": "Add proper error handling for all commands with clear user-facing error messages. Handle missing API keys gracefully, validate episode/season numbers, and provide helpful next-step suggestions when prerequisites are missing.",
-      "status": "todo",
+      "description": "All commands have proper error handling: config validation, episode/season number validation, missing API key checks, missing prerequisite file checks with actionable next-step messages, graceful degradation for optional resources. Verified through integration tests.",
+      "status": "done",
       "priority": "normal"
     },
     {
@@ -134,6 +134,20 @@
       "description": "Add optional narrator voice that reads scene descriptions and stage directions during audio synthesis.",
       "status": "todo",
       "priority": "low"
+    },
+    {
+      "id": 20,
+      "title": "Retry logic for API calls",
+      "description": "Add retry logic with exponential backoff for transient failures in LLM API calls (Gemini/Claude), ElevenLabs synthesis API, and podcast RSS publishing endpoint. Prevent losing progress on long synthesis runs due to temporary network issues.",
+      "status": "todo",
+      "priority": "normal"
+    },
+    {
+      "id": 21,
+      "title": "Validate LLM output format for scripts",
+      "description": "After LLM generates a script (write-script and translate commands), validate the output parses as valid YAML matching the scriptSchema. Re-prompt the LLM if validation fails, to avoid downstream synthesis errors.",
+      "status": "todo",
+      "priority": "normal"
     }
   ]
 }

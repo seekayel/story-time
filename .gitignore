@@ -35,3 +35,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Show data (generated content)
 shows/
+
+# Test temp directories
+.test-*
