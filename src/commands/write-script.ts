@@ -11,12 +11,12 @@ import {
 	readFileIfExists,
 	writeFileEnsureDir,
 } from "../lib/files.ts";
-import { generate } from "../lib/llm.ts";
+import { generate, type ModelProvider } from "../lib/llm.ts";
 import { validateScriptYaml } from "../lib/scripts.ts";
 
 export async function writeScript(
 	episodeNumber: string,
-	options: { show?: string; season?: number },
+	options: { show?: string; season?: number; model?: ModelProvider },
 ): Promise<void> {
 	const epNum = Number.parseInt(episodeNumber, 10);
 	if (Number.isNaN(epNum) || epNum < 1) {
@@ -120,6 +120,7 @@ Episode plot:\n${plotContent}`;
 		const result = await generate({
 			system: systemPrompt,
 			prompt: currentPrompt,
+			provider: options.model,
 		});
 		const validation = validateScriptYaml(result);
 

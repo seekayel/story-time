@@ -12,11 +12,11 @@ import {
 	readFileIfExists,
 	writeFileEnsureDir,
 } from "../lib/files.ts";
-import { generate } from "../lib/llm.ts";
+import { generate, type ModelProvider } from "../lib/llm.ts";
 
 export async function developEpisode(
 	episodeNumber: string,
-	options: { show?: string; season?: number },
+	options: { show?: string; season?: number; model?: ModelProvider },
 ): Promise<void> {
 	const epNum = Number.parseInt(episodeNumber, 10);
 	if (Number.isNaN(epNum) || epNum < 1) {
@@ -95,7 +95,11 @@ Format as a markdown document with clear headings.`;
 	}
 
 	console.log("  Generating episode plot...");
-	const result = await generate({ system: systemPrompt, prompt });
+	const result = await generate({
+		system: systemPrompt,
+		prompt,
+		provider: options.model,
+	});
 	writeFileEnsureDir(plotPath, result);
 	console.log(`  Wrote ${plotPath}`);
 	console.log("Episode development complete.");

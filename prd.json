@@ -194,8 +194,8 @@
     {
       "id": 28,
       "title": "Per-command --model flag override",
-      "description": "Add --model flag to individual pipeline commands (develop-show, develop-season, develop-episode, write-script, translate) to override the default model for a single run without changing the global config.",
-      "status": "todo",
+      "description": "Add --model flag to individual pipeline commands (develop-show, develop-season, develop-episode, write-script, translate) to override the default model for a single run without changing the global config. Implemented by adding --model option to all 5 LLM commands in CLI entry point and threading the ModelProvider through each command function's options to the generate() call. Integration tests in tests/commands/model-override.test.ts verify provider propagation for all commands and undefined when not specified.",
+      "status": "done",
       "priority": "normal"
     },
     {
@@ -204,6 +204,20 @@
       "description": "Integrate ambient sounds and sound effects into synthesized audio. Currently non-verbal actions are skipped during synthesis. Add support for mapping action descriptions to sound effect files.",
       "status": "todo",
       "priority": "low"
+    },
+    {
+      "id": 30,
+      "title": "Integration tests for per-command --model flag override",
+      "description": "Maintain passing tests in tests/commands/model-override.test.ts. Tests verify that the --model flag is correctly propagated as the provider parameter to the generate() function for all 5 LLM commands (develop-show, develop-season, develop-episode, write-script, translate). Tests also verify provider is undefined when --model is not specified.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 31,
+      "title": "Model flag validation",
+      "description": "Validate that --model flag only accepts 'gemini' or 'claude' values. Currently any string is accepted. Add validation in the CLI layer or command functions to reject invalid model names with a helpful error message.",
+      "status": "todo",
+      "priority": "normal"
     }
   ]
 }

@@ -36,6 +36,7 @@ program
 	.command("develop-show")
 	.description("Generate character briefs from show config")
 	.option("--show <path>", "Show directory path")
+	.option("--model <model>", "Model to use (gemini or claude)")
 	.action(developShow);
 
 program
@@ -43,10 +44,12 @@ program
 	.description("Generate season story arc")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
+	.option("--model <model>", "Model to use (gemini or claude)")
 	.action((options) =>
 		developSeason({
 			show: options.show,
 			season: Number.parseInt(options.season, 10),
+			model: options.model,
 		}),
 	);
 
@@ -56,10 +59,12 @@ program
 	.argument("<episode-number>", "Episode number")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
+	.option("--model <model>", "Model to use (gemini or claude)")
 	.action((episodeNumber, options) =>
 		developEpisode(episodeNumber, {
 			show: options.show,
 			season: Number.parseInt(options.season, 10),
+			model: options.model,
 		}),
 	);
 
@@ -69,10 +74,12 @@ program
 	.argument("<episode-number>", "Episode number")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
+	.option("--model <model>", "Model to use (gemini or claude)")
 	.action((episodeNumber, options) =>
 		writeScript(episodeNumber, {
 			show: options.show,
 			season: Number.parseInt(options.season, 10),
+			model: options.model,
 		}),
 	);
 
@@ -82,10 +89,12 @@ program
 	.argument("<episode-number>", "Episode number")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
+	.option("--model <model>", "Model to use (gemini or claude)")
 	.action((episodeNumber, options) =>
 		translate(episodeNumber, {
 			show: options.show,
 			season: Number.parseInt(options.season, 10),
+			model: options.model,
 		}),
 	);
 

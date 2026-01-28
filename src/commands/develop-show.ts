@@ -5,9 +5,12 @@ import {
 	readFileIfExists,
 	writeFileEnsureDir,
 } from "../lib/files.ts";
-import { generate } from "../lib/llm.ts";
+import { generate, type ModelProvider } from "../lib/llm.ts";
 
-export async function developShow(options: { show?: string }): Promise<void> {
+export async function developShow(options: {
+	show?: string;
+	model?: ModelProvider;
+}): Promise<void> {
 	const showPath = resolveShowPath(options.show);
 	const config = loadShowConfig(showPath);
 	const charactersDir = getShowDir(showPath, "characters");
@@ -50,7 +53,11 @@ Format as a markdown document with clear headings.`;
 		}
 
 		console.log(`  Generating brief for ${character.name}...`);
-		const result = await generate({ system: systemPrompt, prompt });
+		const result = await generate({
+			system: systemPrompt,
+			prompt,
+			provider: options.model,
+		});
 		writeFileEnsureDir(filePath, result);
 		console.log(`  Wrote ${filePath}`);
 	}

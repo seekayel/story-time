@@ -11,11 +11,12 @@ import {
 	readFileIfExists,
 	writeFileEnsureDir,
 } from "../lib/files.ts";
-import { generate } from "../lib/llm.ts";
+import { generate, type ModelProvider } from "../lib/llm.ts";
 
 export async function developSeason(options: {
 	show?: string;
 	season?: number;
+	model?: ModelProvider;
 }): Promise<void> {
 	const showPath = resolveShowPath(options.show);
 	const config = loadShowConfig(showPath);
@@ -76,7 +77,11 @@ Format as a markdown document with clear headings.`;
 	}
 
 	console.log("  Generating season arc...");
-	const result = await generate({ system: systemPrompt, prompt });
+	const result = await generate({
+		system: systemPrompt,
+		prompt,
+		provider: options.model,
+	});
 	writeFileEnsureDir(arcPath, result);
 	console.log(`  Wrote ${arcPath}`);
 	console.log("Season development complete.");
