@@ -23,6 +23,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "story-time": "link:story-time",
     "@ai-sdk/anthropic": "^3.0.28",
     "@ai-sdk/google": "^3.0.15",
     "ai": "^6.0.57",

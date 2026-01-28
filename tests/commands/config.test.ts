@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Ensure llm module provides validateModelProvider (other test files mock it without)
@@ -18,13 +18,9 @@ mock.module("../../src/lib/llm.ts", () => ({
 
 import { configCommand } from "../../src/commands/config.ts";
 
-const CONFIG_DIR = join(
-	process.env.HOME || process.env.USERPROFILE || "~",
-	".story-time",
-);
-const CONFIG_FILE = join(CONFIG_DIR, "config.yaml");
+const CONFIG_FILE = join(process.cwd(), "config.yaml");
 
-const VALID_CONFIG = "model: gemini\nshow_path: null\n";
+const VALID_CONFIG = "model: gemini\nshow_path: ./shows\n";
 
 describe("config command", () => {
 	let originalConfig: string | null = null;
@@ -37,7 +33,6 @@ describe("config command", () => {
 			originalConfig = null;
 		}
 		// Reset to a valid config before each test
-		mkdirSync(CONFIG_DIR, { recursive: true });
 		writeFileSync(CONFIG_FILE, VALID_CONFIG, "utf-8");
 	});
 

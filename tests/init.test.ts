@@ -53,4 +53,25 @@ describe("initShow", () => {
 			"Show directory already exists",
 		);
 	});
+
+	test("replaces spaces with underscores in file path", async () => {
+		const showNameWithSpaces = "My Test Show";
+		const expectedDirName = "My_Test_Show";
+		const showPath = join(TEST_SHOWS_DIR, expectedDirName);
+
+		try {
+			await initShow(showNameWithSpaces);
+			expect(existsSync(showPath)).toBe(true);
+			expect(existsSync(join(showPath, "show.yaml"))).toBe(true);
+
+			// Config should preserve original name with spaces
+			const configContent = readFileSync(join(showPath, "show.yaml"), "utf-8");
+			const config = YAML.parse(configContent);
+			expect(config.name).toBe(showNameWithSpaces);
+		} finally {
+			if (existsSync(showPath)) {
+				rmSync(showPath, { recursive: true });
+			}
+		}
+	});
 });

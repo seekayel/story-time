@@ -27,7 +27,8 @@ const DEFAULT_SHOW_CONFIG = {
 };
 
 export async function initShow(showName: string): Promise<void> {
-	const showPath = resolve("shows", showName);
+	const safeName = showName.replace(/\s+/g, "_");
+	const showPath = resolve("shows", safeName);
 
 	if (existsSync(showPath)) {
 		throw new Error(`Show directory already exists: ${showPath}`);

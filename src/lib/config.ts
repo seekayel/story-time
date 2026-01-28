@@ -1,13 +1,9 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import YAML from "yaml";
 import { type ShowConfig, showConfigSchema } from "./schemas.ts";
 
-const CONFIG_DIR = join(
-	process.env.HOME || process.env.USERPROFILE || "~",
-	".story-time",
-);
-const CONFIG_FILE = join(CONFIG_DIR, "config.yaml");
+const CONFIG_FILE = join(process.cwd(), "config.yaml");
 
 export interface AppConfig {
 	model: "gemini" | "claude";
@@ -16,7 +12,7 @@ export interface AppConfig {
 
 const DEFAULT_APP_CONFIG: AppConfig = {
 	model: "gemini",
-	show_path: null,
+	show_path: "./shows",
 };
 
 const VALID_MODEL_VALUES = ["gemini", "claude"];
@@ -40,7 +36,6 @@ export function loadAppConfig(): AppConfig {
 }
 
 export function saveAppConfig(config: AppConfig): void {
-	mkdirSync(CONFIG_DIR, { recursive: true });
 	writeFileSync(CONFIG_FILE, YAML.stringify(config), "utf-8");
 }
 
