@@ -215,8 +215,15 @@
     {
       "id": 31,
       "title": "Model flag validation",
-      "description": "Validate that --model flag only accepts 'gemini' or 'claude' values. Currently any string is accepted. Add validation in the CLI layer or command functions to reject invalid model names with a helpful error message.",
-      "status": "todo",
+      "description": "Validate that --model flag only accepts 'gemini' or 'claude' values at all layers. Added VALID_MODELS constant and validateModelProvider() function in src/lib/llm.ts as the single source of truth. CLI layer uses Commander's choices() to reject invalid values immediately. getModel() has a runtime guard against invalid providers. loadAppConfig() validates the model value read from config.yaml on disk. Config command uses the shared validateModelProvider() instead of inline checks. Unit tests in tests/model-validation.test.ts cover valid values, invalid values, empty strings, and case-sensitive rejection.",
+      "status": "done",
+      "priority": "normal"
+    },
+    {
+      "id": 32,
+      "title": "Unit tests for model validation",
+      "description": "Maintain passing tests in tests/model-validation.test.ts. Tests cover: VALID_MODELS contains exactly gemini and claude, validateModelProvider accepts valid values and returns them, rejects invalid model names with descriptive error message, rejects empty strings, rejects case-variant names (Gemini, Claude, gpt-4).",
+      "status": "done",
       "priority": "normal"
     }
   ]

@@ -19,16 +19,24 @@ const DEFAULT_APP_CONFIG: AppConfig = {
 	show_path: null,
 };
 
+const VALID_MODEL_VALUES = ["gemini", "claude"];
+
 export function loadAppConfig(): AppConfig {
 	if (!existsSync(CONFIG_FILE)) {
 		return { ...DEFAULT_APP_CONFIG };
 	}
 	const raw = readFileSync(CONFIG_FILE, "utf-8");
 	const parsed = YAML.parse(raw) as Partial<AppConfig> | null;
-	return {
+	const config = {
 		...DEFAULT_APP_CONFIG,
 		...parsed,
 	};
+	if (!VALID_MODEL_VALUES.includes(config.model)) {
+		throw new Error(
+			`Invalid model "${config.model}" in config file ${CONFIG_FILE}. Must be "gemini" or "claude".`,
+		);
+	}
+	return config;
 }
 
 export function saveAppConfig(config: AppConfig): void {

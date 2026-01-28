@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { loadAppConfig, saveAppConfig } from "../lib/config.ts";
-import type { ModelProvider } from "../lib/llm.ts";
+import { validateModelProvider } from "../lib/llm.ts";
 
 export interface ConfigOptions {
 	model?: string;
@@ -11,12 +11,7 @@ export async function configCommand(options: ConfigOptions): Promise<void> {
 	const config = loadAppConfig();
 
 	if (options.model) {
-		if (options.model !== "gemini" && options.model !== "claude") {
-			throw new Error(
-				`Invalid model: ${options.model}. Must be "gemini" or "claude".`,
-			);
-		}
-		config.model = options.model as ModelProvider;
+		config.model = validateModelProvider(options.model);
 		console.log(`Model set to: ${config.model}`);
 	}
 

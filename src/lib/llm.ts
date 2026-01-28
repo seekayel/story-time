@@ -6,8 +6,23 @@ import { withRetry } from "./retry.ts";
 
 export type ModelProvider = "gemini" | "claude";
 
+export const VALID_MODELS: readonly string[] = ["gemini", "claude"];
+
+export function validateModelProvider(value: string): ModelProvider {
+	if (!VALID_MODELS.includes(value)) {
+		throw new Error(`Invalid model: "${value}". Must be "gemini" or "claude".`);
+	}
+	return value as ModelProvider;
+}
+
 function getModel(provider?: ModelProvider) {
 	const modelProvider = provider ?? loadAppConfig().model;
+
+	if (modelProvider !== "claude" && modelProvider !== "gemini") {
+		throw new Error(
+			`Invalid model: "${modelProvider}". Must be "gemini" or "claude".`,
+		);
+	}
 
 	if (modelProvider === "claude") {
 		const apiKey = process.env.ANTHROPIC_API_KEY;

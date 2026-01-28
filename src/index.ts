@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import "dotenv/config";
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { configCommand } from "./commands/config.ts";
 import { developEpisode } from "./commands/develop-episode.ts";
 import { developSeason } from "./commands/develop-season.ts";
@@ -11,6 +11,12 @@ import { status } from "./commands/status.ts";
 import { synthesize } from "./commands/synthesize.ts";
 import { translate } from "./commands/translate.ts";
 import { writeScript } from "./commands/write-script.ts";
+import { VALID_MODELS } from "./lib/llm.ts";
+
+const modelOption = () =>
+	new Option("--model <model>", "Model to use (gemini or claude)").choices(
+		VALID_MODELS,
+	);
 
 const program = new Command();
 
@@ -28,7 +34,7 @@ program
 program
 	.command("config")
 	.description("View or update configuration")
-	.option("--model <model>", "Set default model (gemini or claude)")
+	.addOption(modelOption())
 	.option("--show <path>", "Set active show directory path")
 	.action(configCommand);
 
@@ -36,7 +42,7 @@ program
 	.command("develop-show")
 	.description("Generate character briefs from show config")
 	.option("--show <path>", "Show directory path")
-	.option("--model <model>", "Model to use (gemini or claude)")
+	.addOption(modelOption())
 	.action(developShow);
 
 program
@@ -44,7 +50,7 @@ program
 	.description("Generate season story arc")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
-	.option("--model <model>", "Model to use (gemini or claude)")
+	.addOption(modelOption())
 	.action((options) =>
 		developSeason({
 			show: options.show,
@@ -59,7 +65,7 @@ program
 	.argument("<episode-number>", "Episode number")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
-	.option("--model <model>", "Model to use (gemini or claude)")
+	.addOption(modelOption())
 	.action((episodeNumber, options) =>
 		developEpisode(episodeNumber, {
 			show: options.show,
@@ -74,7 +80,7 @@ program
 	.argument("<episode-number>", "Episode number")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
-	.option("--model <model>", "Model to use (gemini or claude)")
+	.addOption(modelOption())
 	.action((episodeNumber, options) =>
 		writeScript(episodeNumber, {
 			show: options.show,
@@ -89,7 +95,7 @@ program
 	.argument("<episode-number>", "Episode number")
 	.option("--show <path>", "Show directory path")
 	.option("--season <number>", "Season number", "1")
-	.option("--model <model>", "Model to use (gemini or claude)")
+	.addOption(modelOption())
 	.action((episodeNumber, options) =>
 		translate(episodeNumber, {
 			show: options.show,
