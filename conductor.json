@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "setup": "bun install && bun run lint && bun run build && [ -e .env ] || ln -s ~/git/seekayel/story-time/.env .env && bun run test",
+    "run": "bun run dev"
+  }
+}
