@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Story Time CLI: creative stages run the story-time skill through Claude Code;
+# auth, voices, and audio call the ElevenLabs scripts directly.
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+scripts="$root/.claude/skills/story-time/scripts"
+cd "$root"
+
+usage() {
+  cat <<'USAGE'
+usage: bin/story <command> [args]
+
+Creative stages (run Claude Code headless with the story-time skill; add -i for an interactive session):
+  vision                         story/vision.md from story/brief.md
+  characters                     story/characters/*.md
+  season N                       story/season-NN/arc.md
+  plot N E                       plot.md for episode(s) E (3, 1-4, 1,3)
+  script N E                     script.md
+  translate N E LANG             script-LANG.md
+  cast                           pick ElevenLabs voices → story/voice-cast.md
+  next                           what's done and what's unblocked
+  "any free-form request"        e.g. bin/story "make Chuck braver in episode 2"
+
+ElevenLabs:
+  auth [--check|--from-env]      save and verify your API key
+  voices list|library|add|preview ...
+  audio N E [--lang L] [--dry-run]   synthesize out/season-NN/episode-EE.mp3
+
+  status                         list story files
+USAGE
+}
+
+[[ $# -eq 0 ]] && { usage; exit 1; }
+
+case "$1" in
+  -h|--help|help) usage ;;
+  auth)   shift; exec python3 "$scripts/auth.py" "$@" ;;
+  voices) shift; exec python3 "$scripts/voices.py" "$@" ;;
+  audio)  shift; exec python3 "$scripts/episode.py" "$@" ;;
+  status) find story -name '*.md' | sort ;;
+  *)
+    interactive=false
+    args=()
+    for arg in "$@"; do
+      if [[ "$arg" == "-i" ]]; then interactive=true; else args+=("$arg"); fi
+    done
+    prompt="/story-time ${args[*]}"
+    if $interactive; then
+      exec claude "$prompt"
+    else
+      exec claude -p --permission-mode acceptEdits ${STORY_CLAUDE_FLAGS:-} "$prompt"
+    fi
+    ;;
+esac

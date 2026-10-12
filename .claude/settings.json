@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(story/**)",
+      "Bash(python3 .claude/skills/story-time/scripts/voices.py list *)",
+      "Bash(python3 .claude/skills/story-time/scripts/voices.py library *)",
+      "Bash(python3 .claude/skills/story-time/scripts/voices.py preview *)",
+      "Bash(python3 .claude/skills/story-time/scripts/episode.py * --dry-run)",
+      "Bash(python3 .claude/skills/story-time/scripts/auth.py --check)"
+    ]
+  }
+}
