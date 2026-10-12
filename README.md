@@ -1,216 +1,105 @@
-# Story Time
+# Story Time Studio
 
-A CLI tool that generates children's audio story series using AI. It automates the entire pipeline from character development to podcast distribution.
+This repository is a Codex skill for developing and producing serialized audio fiction. It carries a project from series vision through character development, season architecture, episode plots, audio-first scripts, localization, voice casting, ElevenLabs synthesis, and an RSS podcast delivered to a Yoto Player through GitHub Pages.
 
-## Features
+Creative work lives in [`story/`](story/). The skill lives in [`.agents/skills/story-time/`](.agents/skills/story-time/) so Codex discovers it automatically when working in this repository.
 
-- AI-powered script generation (Gemini or Claude)
-- Multi-language support with translation
-- Audio synthesis via ElevenLabs
-- Podcast RSS feed generation
-- Batch processing for multiple episodes
-- Human-in-the-loop feedback workflow
+## Work locally
 
-## Installation
+Invoke the skill in Codex:
 
-### Prerequisites
+```text
+Use $story-time to develop the series vision from story/brief.md.
+Use $story-time to plan season 1.
+Use $story-time to write episodes 1-3 of season 1.
+Use $story-time to cast voices for the recurring characters.
+```
 
-- [Bun](https://bun.sh) runtime
+The skill reads prior artifacts, incorporates direct edits and `<!-- FEEDBACK: ... -->` comments, and writes reviewable Markdown back into `story/`.
 
-### Setup
+Check the current pipeline state and validate existing artifacts:
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd story-time
-
-# Install dependencies
-bun install
-
-# Build the CLI
-bun run build
-
-# Install globally
-bun link
+python3 .agents/skills/story-time/scripts/storyctl.py status
+python3 .agents/skills/story-time/scripts/storyctl.py validate --allow-incomplete
 ```
 
-For development without building:
+To start a different series, move the existing `story/` directory elsewhere and run:
 
 ```bash
-bun run dev story-time <command>
+python3 .agents/skills/story-time/scripts/storyctl.py init
 ```
 
-## Configuration
+## Repository layout
 
-### API Keys
+```text
+.agents/skills/story-time/       Codex skill, references, templates, tools
+.github/workflows/story-develop.yml
+.github/workflows/story-produce.yml
+.github/workflows/validate.yml
+story/
+  project.toml                   Human-owned format/provider configuration
+  brief.md                       Initial creative input
+  vision.md                      Generated series bible/vision
+  characters/*.md               Character briefs
+  seasons/season-NN/
+    architecture.md
+    episodes/episode-NN/
+      plot.md
+      script.md                  Markdown containing canonical JSON
+      script-<language>.md       Optional localized script
+      release.md
+  production/
+    voice-cast.md                Markdown containing provider assignments
+    voice-catalog.json           Temporary provider inventory (ignored)
+    audio/...                    Generated MP3 files (ignored)
+    feed.xml                     Generated RSS (ignored)
+    yoto.md                      Yoto setup and delivery state
+    site/...                     Rebuildable GitHub Pages payload (ignored)
+```
 
-Create a `.env` file in the project root:
+## GitHub Actions
+
+`Story development` is a manual, stage-scoped workflow. It runs the repository skill with the official `openai/codex-action`, validates the result, pushes a run-specific branch, and opens a pull request containing the `story/` text changes. Configure these repository secrets:
+
+- `OPENAI_API_KEY` — required for Codex runs.
+- `ELEVEN_LABS_API_KEY` — optional for the `voices` stage; lets the workflow fetch a real catalog before Codex casts voices.
+
+`Story production` is a separate manual workflow. It validates, performs a dry run, restores any episodes already on Pages, synthesizes the selected episodes, generates RSS, and uploads a review artifact. Set `publish_pages=true` to deploy the feed and MP3s to GitHub Pages. Production requires:
+
+- `ELEVEN_LABS_API_KEY`
+
+Before the first deployment, open **Settings → Pages** in GitHub and select **GitHub Actions** as the source. The expected feed URL for this repository is `https://seekayel.github.io/story-time/feed.xml`; the workflow uses GitHub's configured Pages URL automatically, including a custom domain if one is added later.
+
+### Add the feed to Yoto
+
+After the first Pages deployment:
+
+1. Open `https://yotoplay.com/create` using the same account as the Yoto app.
+2. Select **Podcasts → Add Podcast**.
+3. Paste the deployed `feed.xml` URL and retrieve the podcast details.
+4. Save it, find it under **Make Your Own** in the Yoto app, and choose **Link to a Card**.
+
+GitHub Pages must serve the RSS and audio without authentication, so these stories are publicly accessible to anyone who has or discovers the URLs. GitHub currently caps a published Pages site at 1 GB; the build stops at 950 MB so the audio can be migrated before reaching that limit.
+
+## Produce locally
+
+Fetch a current voice catalog, then ask Codex to create `voice-cast.md`:
 
 ```bash
-# LLM Provider (at least one required)
-GEMINI_API_KEY=your-google-gemini-api-key
-ANTHROPIC_API_KEY=your-anthropic-api-key
-
-# Audio synthesis (required for audio generation)
-ELEVEN_LABS_API_KEY=your-elevenlabs-api-key
+ELEVEN_LABS_API_KEY=... python3 .agents/skills/story-time/scripts/storyctl.py voice-catalog
 ```
 
-### Initialize a Show
+Preview and synthesize a selection:
 
 ```bash
-story-time init "My Adventure Show"
+python3 .agents/skills/story-time/scripts/storyctl.py synthesize --season 1 --episodes 1-3 --dry-run
+ELEVEN_LABS_API_KEY=... python3 .agents/skills/story-time/scripts/storyctl.py synthesize --season 1 --episodes 1-3
+python3 .agents/skills/story-time/scripts/storyctl.py feed
+python3 .agents/skills/story-time/scripts/storyctl.py pages \
+  --base-url https://seekayel.github.io/story-time
 ```
 
-This creates a show directory with a `show.yaml` configuration file. Edit it to define your characters, voices, and settings:
+Synthesis requires Python 3.11+ and `ffmpeg`. Running `pages` locally stages the deployable files but does not publish them; Pages deployment remains an explicit GitHub Actions input.
 
-```yaml
-name: "My Adventure Show"
-description: "Two friends explore magical lands..."
-target_language: "es"
-source_language: "en"
-episodes_per_season: 12
-episode_duration_minutes: 25
-
-characters:
-  - name: "Hero"
-    voice_id: "elevenlabs_voice_id_here"
-  - name: "Sidekick"
-    voice_id: "elevenlabs_voice_id_here"
-```
-
-### Set Active Show
-
-```bash
-story-time config --show shows/my-adventure-show
-```
-
-### Set Default LLM
-
-```bash
-story-time config --model gemini   # or claude
-```
-
-## Usage
-
-### The Pipeline
-
-Story Time uses a 7-stage pipeline. Run each stage in order:
-
-| Stage | Command | Output |
-|-------|---------|--------|
-| 1 | `develop-show` | Character briefs |
-| 2 | `develop-season` | Season story arc |
-| 3 | `develop-episode` | Episode plots |
-| 4 | `write-script` | English scripts |
-| 5 | `translate` | Translated scripts |
-| 6 | `synthesize` | MP3 audio files |
-| 7 | `generate-feed` | Podcast RSS feed |
-
-### Example Workflow
-
-```bash
-# 1. Develop character briefs
-story-time develop-show
-
-# 2. Create the season arc
-story-time develop-season --season 1
-
-# 3. Generate episode plots
-story-time develop-episode 1
-story-time develop-episode 2-5      # Range of episodes
-story-time develop-episode 1,3,5    # Specific episodes
-story-time develop-episode --all    # All episodes in season
-
-# 4. Write scripts
-story-time write-script 1
-
-# 5. Translate to target language
-story-time translate 1
-
-# 6. Estimate duration before synthesis
-story-time estimate-duration 1 --translated
-
-# 7. Generate audio
-story-time synthesize 1
-
-# 8. Generate podcast feed
-story-time generate-feed --season 1
-```
-
-### Check Progress
-
-```bash
-story-time status
-story-time status --season 2
-```
-
-Example output:
-
-```
-Season 1: arc [+]
-  Ep  | Plot  | Script | Translated | Audio
-  ----|-------|--------|------------|------
-  1   |  [+]  |  [+]   |    [+]     | [+]
-  2   |  [+]  |  [+]   |    [-]     | [-]
-  3   |  [+]  |  [-]   |    [-]     | [-]
-```
-
-### Command Options
-
-Most commands support these flags:
-
-```bash
---show <path>      # Specify show directory
---season <number>  # Specify season (default: 1)
---model <name>     # Override LLM (gemini or claude)
-```
-
-### Human Feedback
-
-Edit any generated markdown file and add feedback comments:
-
-```markdown
-<!-- FEEDBACK: Make this dialogue more playful -->
-```
-
-Re-run the same command to incorporate your feedback into the regenerated content.
-
-## Directory Structure
-
-```
-shows/
-  my-show/
-    show.yaml
-    characters/
-      hero.md
-      sidekick.md
-    seasons/
-      season-01/
-        arc.md
-        episodes/
-          ep-01/
-            plot.md
-            script.md
-            script-es.md
-            audio.mp3
-```
-
-## Development
-
-```bash
-# Run linter
-bun run lint
-
-# Fix linting issues
-bun run lint:fix
-
-# Run tests
-bun test
-
-# Build
-bun run build
-```
-
-## License
-
-MIT
+The old Bun CLI has been removed. The user-modified root `config.yaml` remains as unmigrated legacy state; the active skill configuration is `story/project.toml`.

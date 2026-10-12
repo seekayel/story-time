@@ -27,6 +27,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .eslintcache
 .cache
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
 
 # IntelliJ based IDEs
 .idea
@@ -34,8 +36,14 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Finder (MacOS) folder config
 .DS_Store
 
-# Show data (generated content)
+# Legacy show data (the active, versioned workspace is story/)
 shows/
+
+# Rebuildable production output
+story/production/audio/
+story/production/feed.xml
+story/production/voice-catalog.json
+story/production/site/
 
 # Test temp directories
 .test-*
